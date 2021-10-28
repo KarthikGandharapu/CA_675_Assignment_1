@@ -1,0 +1,21 @@
+SELECT MAX(Posts.ViewCount) FROM posts
+
+SELECT TOP 50000 Id, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, Title, Tags
+FROM posts
+WHERE Posts.ViewCount < 10062790
+ORDER BY Posts.ViewCount DESC
+
+SELECT TOP 50000 Id, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, Title, Tags
+FROM posts
+WHERE Posts.ViewCount < 127752
+ORDER BY Posts.ViewCount DESC
+
+SELECT TOP 50000 Id, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, Title, Tags
+FROM posts
+WHERE Posts.ViewCount < 74784
+ORDER BY Posts.ViewCount DESC
+
+SELECT TOP 50000 Id, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, Title, Tags
+FROM posts
+WHERE Posts.ViewCount < 55691
+ORDER BY Posts.ViewCount DESC

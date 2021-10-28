@@ -1,0 +1,31 @@
+--HIVEMALL
+--Add .jar and .hive files into the hive
+add jar /home/karthik_g1967/hivemall-all-0.6.0-incubating.jar;
+source /home/karthik_g1967/hive_define.hive;
+
+--Setting parameters
+SET hive.cli.print.header = true;
+SET hivevar:n_docs = 10;
+
+--Creating temporary macros
+CREATE TEMPORARY MACRO maximum(x INT,y INT) if(x>y,x,y);
+CREATE TEMPORARY MACRO tf_idf(tf FLOAT, df_t INT, n_docs INT) tf * (log(10, CAST(n_docs as FLOAT)/maximum(1,df_t)) + 1.0);
+
+--Creating a table to store the top 10 users ordered by their score
+CREATE TABLE tfIdfTab AS SELECT OwnerUserId, Body FROM QTAB ORDER BY Score DESC LIMIT 10;
+
+--Creating a view to remove stopwords 
+CREATE OR REPLACE VIEW StopWordsR AS SELECT OwnerUserId, word FROM tfIdfTab LATERAL VIEW explode(split(Body,' ')) t AS word WHERE NOT is_stopword(word);
+
+--Creating a Term Frequency view
+CREATE OR REPLACE VIEW Term_Freq AS SELECT OwnerUserId, word, freq FROM (SELECT OwnerUserId, tf(word) AS word2freq FROM StopWordsR GROUP BY OwnerUserId) t LATERAL VIEW explode(word2freq) t2 AS word, freq;
+
+--Creating a Document Frequency view
+CREATE OR REPLACE VIEW DOC_Freq AS SELECT word, COUNT(DISTINCT OwnerUserId) docs FROM StopWordsR GROUP BY word;
+
+--Creating a View to store the Term Frequency and Inverse Document Frequency along the word and user id
+CREATE OR REPLACE VIEW TfIDFQ AS SELECT tf.OwnerUserId, tf.word, tf_idf(tf.freq, df.docs, ${n_docs}) AS tfidf FROM Term_Freq tf JOIN DOC_Freq df ON (tf.word = df.word) ORDER BY tfidf DESC;
+
+-- TASK 4:
+-- Top 10 words/terms for each top 10 users
+SELECT * FROM (SELECT owneruserid, word, tfidf, rank() over (PARTITION by owneruserid ORDER BY tfidf DESC) as rank FROM TfIDFQ where word != '') t WHERE rank < 11;
