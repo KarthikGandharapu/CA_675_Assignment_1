@@ -1,0 +1,19 @@
+--Creating a Database DB
+CREATE DATABASE IF NOT EXISTS QDBA;
+
+--Creating a Table
+CREATE TABLE QTAB (Body string, Score int, Id int, ViewCount int, OwnerUserId int, OwnerDisplayName string, Title string, Tags string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+--Loading Data into Table
+LOAD DATA INPATH 'hdfs://cluster-3317-m/QFile' INTO TABLE QTAB;
+
+--Task 2.2.1:
+--Top 10 posts by score
+SELECT Title, Score FROM QTAB ORDER BY Score DESC LIMIT 10;
+
+--Task 2.2.2:
+--Top 10 users by post score
+SELECT OwnerUserId, SUM(Score) FROM QTAB GROUP BY OwnerUserId ORDER BY SUM(Score) DESC LIMIT 10;
+
+--Task 2.2.3:
+--Distinct users who have used the word 'cloud'
+SELECT COUNT(DISTINCT OwnerUserId) FROM QTAB WHERE (LOWER(Title) LIKE '% cloud %') OR (LOWER(Tags) LIKE '% cloud %') OR (LOWER(Body) LIKE '% cloud %');
